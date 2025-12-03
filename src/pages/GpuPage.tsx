@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../api/client';
 
 interface GpuBenchmarks {
@@ -40,6 +40,42 @@ interface GameRow {
   p4k?: string;
 }
 
+const GAME_FACTORS: Record<string, number> = {
+  'Valorant': 2.5,
+  'CS2': 2.2,
+  'Grand Theft Auto V Enhanced': 1.4,
+  'Cyberpunk 2077': 1.0,
+  'Fortnite': 1.8,
+  'Battlefield 6': 1.1,
+  'Warzone': 1.15,
+  'Red Dead Redemption 2': 1.05,
+  'ARC Raiders': 1.0,
+};
+
+const estimateAutoFps = (
+  timeSpy?: number | string | null,
+): Record<string, { p1080: number; p1440: number; p4k: number }> => {
+  const ts = typeof timeSpy === 'string' ? Number(timeSpy) : timeSpy ?? 0;
+
+  if (!ts || ts <= 0) return {};
+
+  const base1080 = ts / 350;
+  const base1440 = ts / 480;
+  const base4k = ts / 700;
+
+  const result: Record<string, { p1080: number; p1440: number; p4k: number }> = {};
+
+  Object.entries(GAME_FACTORS).forEach(([name, factor]) => {
+    result[name] = {
+      p1080: Math.round(base1080 * factor),
+      p1440: Math.round(base1440 * factor),
+      p4k: Math.round(base4k * factor),
+    };
+  });
+
+  return result;
+};
+
 const GpuPage: React.FC = () => {
   const [gpus, setGpus] = useState<Gpu[]>([]);
   const [loading, setLoading] = useState(false);
@@ -57,10 +93,21 @@ const GpuPage: React.FC = () => {
   const [bench, setBench] = useState<GpuBenchmarks>({});
   const [outputs, setOutputs] = useState('');
   const [gameRows, setGameRows] = useState<GameRow[]>([
+    { name: 'Valorant' },
+    { name: 'CS2' },
+    { name: 'Grand Theft Auto V Enhanced' },
     { name: 'Cyberpunk 2077' },
-    { name: 'Red Dead Redemption 2' },
     { name: 'Fortnite' },
+    { name: 'Battlefield 6' },
+    { name: 'Warzone' },
+    { name: 'Red Dead Redemption 2' },
+    { name: 'ARC Raiders' },
   ]);
+
+  const autoFps = useMemo(
+    () => estimateAutoFps(bench.timeSpy),
+    [bench.timeSpy],
+  );
 
   const loadGpus = useCallback(async () => {
     try {
@@ -101,6 +148,22 @@ const GpuPage: React.FC = () => {
 
   const addGameRow = () => {
     setGameRows((prev) => [...prev, { name: '' }]);
+  };
+
+  const applyAutoFps = () => {
+    setGameRows((prev) =>
+      prev.map((row) => {
+        const suggestion = row.name ? autoFps[row.name] : undefined;
+        if (!suggestion) return row;
+
+        return {
+          ...row,
+          p1080: row.p1080 && row.p1080 !== '' ? row.p1080 : String(suggestion.p1080),
+          p1440: row.p1440 && row.p1440 !== '' ? row.p1440 : String(suggestion.p1440),
+          p4k: row.p4k && row.p4k !== '' ? row.p4k : String(suggestion.p4k),
+        };
+      }),
+    );
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -203,9 +266,15 @@ const GpuPage: React.FC = () => {
     setBench({});
     setOutputs('');
     setGameRows([
+      { name: 'Valorant' },
+      { name: 'CS2' },
+      { name: 'Grand Theft Auto V Enhanced' },
       { name: 'Cyberpunk 2077' },
-      { name: 'Red Dead Redemption 2' },
       { name: 'Fortnite' },
+      { name: 'Battlefield 6' },
+      { name: 'Warzone' },
+      { name: 'Red Dead Redemption 2' },
+      { name: 'ARC Raiders' },
     ]);
     setEditingSlug(null);
   };
@@ -384,37 +453,47 @@ const GpuPage: React.FC = () => {
                   <div>1440p</div>
                   <div>4K</div>
                 </div>
-                {gameRows.map((row, index) => (
-                  <div key={index} className="fps-row">
-                    <input
-                      className="fps-cell"
-                      placeholder="Oyun adı"
-                      value={row.name}
-                      onChange={(e) => updateGameRow(index, 'name', e.target.value)}
-                    />
-                    <input
-                      className="fps-cell"
-                      type="number"
-                      value={row.p1080 ?? ''}
-                      onChange={(e) => updateGameRow(index, 'p1080', e.target.value)}
-                    />
-                    <input
-                      className="fps-cell"
-                      type="number"
-                      value={row.p1440 ?? ''}
-                      onChange={(e) => updateGameRow(index, 'p1440', e.target.value)}
-                    />
-                    <input
-                      className="fps-cell"
-                      type="number"
-                      value={row.p4k ?? ''}
-                      onChange={(e) => updateGameRow(index, 'p4k', e.target.value)}
-                    />
-                  </div>
-                ))}
+                {gameRows.map((row, index) => {
+                  const suggestion = row.name ? autoFps[row.name] : undefined;
+
+                  return (
+                    <div key={index} className="fps-row">
+                      <input
+                        className="fps-cell"
+                        placeholder="Oyun adı"
+                        value={row.name}
+                        onChange={(e) => updateGameRow(index, 'name', e.target.value)}
+                      />
+                      <input
+                        className="fps-cell"
+                        type="number"
+                        placeholder={suggestion ? String(suggestion.p1080) : ''}
+                        value={row.p1080 ?? ''}
+                        onChange={(e) => updateGameRow(index, 'p1080', e.target.value)}
+                      />
+                      <input
+                        className="fps-cell"
+                        type="number"
+                        placeholder={suggestion ? String(suggestion.p1440) : ''}
+                        value={row.p1440 ?? ''}
+                        onChange={(e) => updateGameRow(index, 'p1440', e.target.value)}
+                      />
+                      <input
+                        className="fps-cell"
+                        type="number"
+                        placeholder={suggestion ? String(suggestion.p4k) : ''}
+                        value={row.p4k ?? ''}
+                        onChange={(e) => updateGameRow(index, 'p4k', e.target.value)}
+                      />
+                    </div>
+                  );
+                })}
               </div>
               <button type="button" className="fps-add" onClick={addGameRow}>
                 + Satır Ekle
+              </button>
+              <button type="button" className="fps-add" onClick={applyAutoFps}>
+                Tahmini FPS ile doldur
               </button>
             </div>
 
