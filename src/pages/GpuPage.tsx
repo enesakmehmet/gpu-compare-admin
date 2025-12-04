@@ -50,6 +50,13 @@ const GAME_FACTORS: Record<string, number> = {
   'Warzone': 1.15,
   'Red Dead Redemption 2': 1.05,
   'ARC Raiders': 1.0,
+  'League of Legends': 3.0,
+  'Dota 2': 2.7,
+  'PUBG: Battlegrounds': 1.6,
+  'Apex Legends': 1.5,
+  'FIFA 23': 2.0,
+  'Euro Truck Simulator 2': 2.1,
+  'Valorant Mobile': 2.0,
 };
 
 const estimateAutoFps = (
@@ -102,6 +109,13 @@ const GpuPage: React.FC = () => {
     { name: 'Warzone' },
     { name: 'Red Dead Redemption 2' },
     { name: 'ARC Raiders' },
+    { name: 'League of Legends' },
+    { name: 'Dota 2' },
+    { name: 'PUBG: Battlegrounds' },
+    { name: 'Apex Legends' },
+    { name: 'FIFA 23' },
+    { name: 'Euro Truck Simulator 2' },
+    { name: 'Valorant Mobile' },
   ]);
 
   const autoFps = useMemo(
@@ -275,6 +289,13 @@ const GpuPage: React.FC = () => {
       { name: 'Warzone' },
       { name: 'Red Dead Redemption 2' },
       { name: 'ARC Raiders' },
+      { name: 'League of Legends' },
+      { name: 'Dota 2' },
+      { name: 'PUBG: Battlegrounds' },
+      { name: 'Apex Legends' },
+      { name: 'FIFA 23' },
+      { name: 'Euro Truck Simulator 2' },
+      { name: 'Valorant Mobile' },
     ]);
     setEditingSlug(null);
   };
