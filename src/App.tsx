@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import './App.css';
+import DashboardPage from './pages/DashboardPage';
 import CpuPage from './pages/CpuPage';
 import GpuPage from './pages/GpuPage';
 import RecommendedSystemsPage from './pages/RecommendedSystemsPage';
@@ -19,6 +20,14 @@ function App() {
             </div>
           </div>
           <nav className="sidebar-nav">
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
+              }
+            >
+              📊 Dashboard
+            </NavLink>
             <NavLink
               to="/cpus"
               className={({ isActive }) =>
@@ -63,11 +72,12 @@ function App() {
 
           <main className="main-content">
             <Routes>
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/cpus" element={<CpuPage />} />
               <Route path="/gpus" element={<GpuPage />} />
               <Route path="/recommended-systems" element={<RecommendedSystemsPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="*" element={<Navigate to="/cpus" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
         </div>
