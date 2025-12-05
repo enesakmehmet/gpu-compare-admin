@@ -1,180 +1,170 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'https://gpu-compare-backend-production.up.railway.app/api/v1';
+import { api } from '../api/client';
 
 interface ConfigItem {
-    key: string;
-    value: string;
-    description: string | null;
-    isDefault: boolean;
+  key: string;
+  value: string;
+  description: string | null;
+  isDefault: boolean;
 }
 
 const SettingsPage: React.FC = () => {
-    const [configs, setConfigs] = useState<ConfigItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [editValues, setEditValues] = useState<Record<string, string>>({});
-    const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [configs, setConfigs] = useState<ConfigItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editValues, setEditValues] = useState<Record<string, string>>({});
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    const fetchConfigs = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem('adminToken');
-            const { data } = await axios.get(`${API_URL}/admin/config`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setConfigs(data);
+  const fetchConfigs = async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get('/admin/config');
+      setConfigs(data);
 
-            // Edit values'ı başlat
-            const values: Record<string, string> = {};
-            data.forEach((c: ConfigItem) => {
-                values[c.key] = c.value;
-            });
-            setEditValues(values);
-        } catch (err) {
-            console.error(err);
-            setMessage({ type: 'error', text: 'Ayarlar yüklenemedi' });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchConfigs();
-    }, []);
-
-    const handleSave = async (key: string) => {
-        try {
-            setSaving(true);
-            const token = localStorage.getItem('adminToken');
-            const config = configs.find(c => c.key === key);
-
-            await axios.post(
-                `${API_URL}/admin/config`,
-                {
-                    key,
-                    value: editValues[key],
-                    description: config?.description,
-                },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            setMessage({ type: 'success', text: `"${getDisplayName(key)}" ayarı güncellendi` });
-            fetchConfigs();
-        } catch (err) {
-            console.error(err);
-            setMessage({ type: 'error', text: 'Ayar güncellenemedi' });
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const getDisplayName = (key: string): string => {
-        const names: Record<string, string> = {
-            requiredAdsCount: 'Gereken Reklam Sayısı',
-            adUnlockDurationHours: 'Kilit Açık Kalma Süresi (Saat)',
-        };
-        return names[key] || key;
-    };
-
-    const getIcon = (key: string): string => {
-        const icons: Record<string, string> = {
-            requiredAdsCount: '🎬',
-            adUnlockDurationHours: '⏰',
-        };
-        return icons[key] || '⚙️';
-    };
-
-    if (loading) {
-        return (
-            <div className="page-container">
-                <div className="loading-spinner">Yükleniyor...</div>
-            </div>
-        );
+      // Edit values'ı başlat
+      const values: Record<string, string> = {};
+      data.forEach((c: ConfigItem) => {
+        values[c.key] = c.value;
+      });
+      setEditValues(values);
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: 'error', text: 'Ayarlar yüklenemedi' });
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
+    fetchConfigs();
+  }, []);
+
+  const handleSave = async (key: string) => {
+    try {
+      setSaving(true);
+      const config = configs.find(c => c.key === key);
+
+      await api.post('/admin/config', {
+        key,
+        value: editValues[key],
+        description: config?.description,
+      });
+
+      setMessage({ type: 'success', text: `"${getDisplayName(key)}" ayarı güncellendi` });
+      fetchConfigs();
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: 'error', text: 'Ayar güncellenemedi' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getDisplayName = (key: string): string => {
+    const names: Record<string, string> = {
+      requiredAdsCount: 'Gereken Reklam Sayısı',
+      adUnlockDurationHours: 'Kilit Açık Kalma Süresi (Saat)',
+    };
+    return names[key] || key;
+  };
+
+  const getIcon = (key: string): string => {
+    const icons: Record<string, string> = {
+      requiredAdsCount: '🎬',
+      adUnlockDurationHours: '⏰',
+    };
+    return icons[key] || '⚙️';
+  };
+
+  if (loading) {
     return (
-        <div className="page-container">
-            <div className="page-header">
-                <h1>⚙️ Uygulama Ayarları</h1>
-                <p className="page-subtitle">Uygulama davranışlarını buradan yönetin</p>
+      <div className="page-container">
+        <div className="loading-spinner">Yükleniyor...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container">
+      <div className="page-header">
+        <h1>⚙️ Uygulama Ayarları</h1>
+        <p className="page-subtitle">Uygulama davranışlarını buradan yönetin</p>
+      </div>
+
+      {message && (
+        <div className={`message ${message.type}`} onClick={() => setMessage(null)}>
+          {message.text}
+        </div>
+      )}
+
+      <div className="settings-grid">
+        {/* Reklam Ayarları */}
+        <div className="settings-card">
+          <div className="settings-card-header">
+            <span className="settings-icon">📺</span>
+            <h2>Reklam Ayarları</h2>
+          </div>
+          <p className="settings-card-description">
+            Sistem tavsiyeleri bölümü için reklam izleme gereksinimleri
+          </p>
+
+          <div className="settings-items">
+            {configs
+              .filter(c => ['requiredAdsCount', 'adUnlockDurationHours'].includes(c.key))
+              .map(config => (
+                <div key={config.key} className="setting-item">
+                  <div className="setting-info">
+                    <span className="setting-icon">{getIcon(config.key)}</span>
+                    <div>
+                      <label className="setting-label">{getDisplayName(config.key)}</label>
+                      <p className="setting-description">{config.description}</p>
+                    </div>
+                  </div>
+                  <div className="setting-control">
+                    <input
+                      type="number"
+                      min="0"
+                      value={editValues[config.key] || ''}
+                      onChange={(e) => setEditValues({ ...editValues, [config.key]: e.target.value })}
+                      className="setting-input"
+                    />
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => handleSave(config.key)}
+                      disabled={saving || editValues[config.key] === config.value}
+                    >
+                      {saving ? '...' : 'Kaydet'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {/* Bilgi Kartı */}
+        <div className="settings-card info-card">
+          <div className="settings-card-header">
+            <span className="settings-icon">💡</span>
+            <h2>Nasıl Çalışır?</h2>
+          </div>
+          <div className="info-content">
+            <div className="info-item">
+              <strong>Gereken Reklam Sayısı:</strong>
+              <p>Kullanıcıların sistem tavsiyeleri bölümünü açmak için izlemesi gereken reklam adedi.</p>
             </div>
-
-            {message && (
-                <div className={`message ${message.type}`} onClick={() => setMessage(null)}>
-                    {message.text}
-                </div>
-            )}
-
-            <div className="settings-grid">
-                {/* Reklam Ayarları */}
-                <div className="settings-card">
-                    <div className="settings-card-header">
-                        <span className="settings-icon">📺</span>
-                        <h2>Reklam Ayarları</h2>
-                    </div>
-                    <p className="settings-card-description">
-                        Sistem tavsiyeleri bölümü için reklam izleme gereksinimleri
-                    </p>
-
-                    <div className="settings-items">
-                        {configs
-                            .filter(c => ['requiredAdsCount', 'adUnlockDurationHours'].includes(c.key))
-                            .map(config => (
-                                <div key={config.key} className="setting-item">
-                                    <div className="setting-info">
-                                        <span className="setting-icon">{getIcon(config.key)}</span>
-                                        <div>
-                                            <label className="setting-label">{getDisplayName(config.key)}</label>
-                                            <p className="setting-description">{config.description}</p>
-                                        </div>
-                                    </div>
-                                    <div className="setting-control">
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={editValues[config.key] || ''}
-                                            onChange={(e) => setEditValues({ ...editValues, [config.key]: e.target.value })}
-                                            className="setting-input"
-                                        />
-                                        <button
-                                            className="btn btn-primary btn-sm"
-                                            onClick={() => handleSave(config.key)}
-                                            disabled={saving || editValues[config.key] === config.value}
-                                        >
-                                            {saving ? '...' : 'Kaydet'}
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                    </div>
-                </div>
-
-                {/* Bilgi Kartı */}
-                <div className="settings-card info-card">
-                    <div className="settings-card-header">
-                        <span className="settings-icon">💡</span>
-                        <h2>Nasıl Çalışır?</h2>
-                    </div>
-                    <div className="info-content">
-                        <div className="info-item">
-                            <strong>Gereken Reklam Sayısı:</strong>
-                            <p>Kullanıcıların sistem tavsiyeleri bölümünü açmak için izlemesi gereken reklam adedi.</p>
-                        </div>
-                        <div className="info-item">
-                            <strong>Kilit Açık Kalma Süresi:</strong>
-                            <p>Kullanıcı gereken reklamları izledikten sonra bölümün kaç saat açık kalacağı.</p>
-                        </div>
-                        <div className="info-item info-warning">
-                            <strong>⚠️ Not:</strong>
-                            <p>Değişiklikler anında uygulamaya yansır. Yeni açılan uygulamalarda güncel değerler kullanılır.</p>
-                        </div>
-                    </div>
-                </div>
+            <div className="info-item">
+              <strong>Kilit Açık Kalma Süresi:</strong>
+              <p>Kullanıcı gereken reklamları izledikten sonra bölümün kaç saat açık kalacağı.</p>
             </div>
+            <div className="info-item info-warning">
+              <strong>⚠️ Not:</strong>
+              <p>Değişiklikler anında uygulamaya yansır. Yeni açılan uygulamalarda güncel değerler kullanılır.</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <style>{`
+      <style>{`
         .page-container {
           padding: 24px;
         }
@@ -346,8 +336,8 @@ const SettingsPage: React.FC = () => {
           color: var(--text-secondary);
         }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };
 
 export default SettingsPage;
