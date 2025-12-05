@@ -6,6 +6,7 @@ import CpuPage from './pages/CpuPage';
 import GpuPage from './pages/GpuPage';
 import RecommendedSystemsPage from './pages/RecommendedSystemsPage';
 import NotificationsPage from './pages/NotificationsPage';
+import PushNotificationsPage from './pages/PushNotificationsPage';
 
 function App() {
   return (
@@ -58,7 +59,15 @@ function App() {
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
             >
-              Bildirimler
+              📋 Uygulama İçi Bildirim
+            </NavLink>
+            <NavLink
+              to="/push-notifications"
+              className={({ isActive }) =>
+                'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
+              }
+            >
+              📱 Push Bildirimler
             </NavLink>
           </nav>
           <div className="sidebar-footer">Sadece yönetim amaçlı kullanın</div>
@@ -77,6 +86,7 @@ function App() {
               <Route path="/gpus" element={<GpuPage />} />
               <Route path="/recommended-systems" element={<RecommendedSystemsPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/push-notifications" element={<PushNotificationsPage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
@@ -87,3 +97,4 @@ function App() {
 }
 
 export default App;
+
