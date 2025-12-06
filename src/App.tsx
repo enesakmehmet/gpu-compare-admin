@@ -9,6 +9,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import PushNotificationsPage from './pages/PushNotificationsPage';
 import SettingsPage from './pages/SettingsPage';
 import MonitoringPage from './pages/MonitoringPage';
+import RankingsPage from './pages/RankingsPage';
 
 function App() {
   return (
@@ -87,6 +88,14 @@ function App() {
             >
               📊 Monitoring
             </NavLink>
+            <NavLink
+              to="/rankings"
+              className={({ isActive }) =>
+                'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
+              }
+            >
+              🏆 Benchmark Sıralaması
+            </NavLink>
           </nav>
           <div className="sidebar-footer">Sadece yönetim amaçlı kullanın</div>
         </aside>
@@ -107,6 +116,7 @@ function App() {
               <Route path="/push-notifications" element={<PushNotificationsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/monitoring" element={<MonitoringPage />} />
+              <Route path="/rankings" element={<RankingsPage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
