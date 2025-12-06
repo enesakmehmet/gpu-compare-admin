@@ -146,53 +146,70 @@ const RankingsPage: React.FC = () => {
     const handleMoveUp = async (index: number) => {
         if (index === 0) return;
 
-        const rankings = activeTab === 'gpu' ? [...gpuRankings] : [...cpuRankings];
-        const temp = rankings[index].rank;
-        rankings[index].rank = rankings[index - 1].rank;
-        rankings[index - 1].rank = temp;
+        if (activeTab === 'gpu') {
+            const rankings = [...gpuRankings];
+            const temp = rankings[index].rank;
+            rankings[index].rank = rankings[index - 1].rank;
+            rankings[index - 1].rank = temp;
 
-        try {
-            const endpoint = activeTab === 'gpu' ? '/admin/rankings/gpu/reorder' : '/admin/rankings/cpu/reorder';
-            const payload = activeTab === 'gpu'
-                ? { rankings: rankings.map(r => ({ gpuId: r.gpuId, rank: r.rank })) }
-                : { rankings: rankings.map((r: any) => ({ cpuId: r.cpuId, rank: r.rank })) };
-
-            await api.put(endpoint, payload);
-
-            if (activeTab === 'gpu') {
+            try {
+                await api.put('/admin/rankings/gpu/reorder', {
+                    rankings: rankings.map(r => ({ gpuId: r.gpuId, rank: r.rank }))
+                });
                 loadGPURankings();
-            } else {
-                loadCPURankings();
+            } catch (error) {
+                console.error('Reorder failed:', error);
             }
-        } catch (error) {
-            console.error('Reorder failed:', error);
+        } else {
+            const rankings = [...cpuRankings];
+            const temp = rankings[index].rank;
+            rankings[index].rank = rankings[index - 1].rank;
+            rankings[index - 1].rank = temp;
+
+            try {
+                await api.put('/admin/rankings/cpu/reorder', {
+                    rankings: rankings.map(r => ({ cpuId: r.cpuId, rank: r.rank }))
+                });
+                loadCPURankings();
+            } catch (error) {
+                console.error('Reorder failed:', error);
+            }
         }
     };
 
     const handleMoveDown = async (index: number) => {
-        const rankings = activeTab === 'gpu' ? gpuRankings : cpuRankings;
-        if (index === rankings.length - 1) return;
+        if (activeTab === 'gpu') {
+            if (index === gpuRankings.length - 1) return;
 
-        const newRankings = [...rankings];
-        const temp = newRankings[index].rank;
-        newRankings[index].rank = newRankings[index + 1].rank;
-        newRankings[index + 1].rank = temp;
+            const rankings = [...gpuRankings];
+            const temp = rankings[index].rank;
+            rankings[index].rank = rankings[index + 1].rank;
+            rankings[index + 1].rank = temp;
 
-        try {
-            const endpoint = activeTab === 'gpu' ? '/admin/rankings/gpu/reorder' : '/admin/rankings/cpu/reorder';
-            const payload = activeTab === 'gpu'
-                ? { rankings: newRankings.map(r => ({ gpuId: r.gpuId, rank: r.rank })) }
-                : { rankings: newRankings.map((r: any) => ({ cpuId: r.cpuId, rank: r.rank })) };
-
-            await api.put(endpoint, payload);
-
-            if (activeTab === 'gpu') {
+            try {
+                await api.put('/admin/rankings/gpu/reorder', {
+                    rankings: rankings.map(r => ({ gpuId: r.gpuId, rank: r.rank }))
+                });
                 loadGPURankings();
-            } else {
-                loadCPURankings();
+            } catch (error) {
+                console.error('Reorder failed:', error);
             }
-        } catch (error) {
-            console.error('Reorder failed:', error);
+        } else {
+            if (index === cpuRankings.length - 1) return;
+
+            const rankings = [...cpuRankings];
+            const temp = rankings[index].rank;
+            rankings[index].rank = rankings[index + 1].rank;
+            rankings[index + 1].rank = temp;
+
+            try {
+                await api.put('/admin/rankings/cpu/reorder', {
+                    rankings: rankings.map(r => ({ cpuId: r.cpuId, rank: r.rank }))
+                });
+                loadCPURankings();
+            } catch (error) {
+                console.error('Reorder failed:', error);
+            }
         }
     };
 
