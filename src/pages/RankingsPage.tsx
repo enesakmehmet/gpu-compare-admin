@@ -154,7 +154,7 @@ const RankingsPage: React.FC = () => {
 
             try {
                 await api.put('/admin/rankings/gpu/reorder', {
-                    rankings: rankings.map(r => ({ gpuId: r.gpuId, rank: r.rank }))
+                    rankings: rankings.map(r => ({ id: r.id, rank: r.rank }))
                 });
                 loadGPURankings();
             } catch (error) {
@@ -168,7 +168,7 @@ const RankingsPage: React.FC = () => {
 
             try {
                 await api.put('/admin/rankings/cpu/reorder', {
-                    rankings: rankings.map(r => ({ cpuId: r.cpuId, rank: r.rank }))
+                    rankings: rankings.map(r => ({ id: r.id, rank: r.rank }))
                 });
                 loadCPURankings();
             } catch (error) {
@@ -188,7 +188,7 @@ const RankingsPage: React.FC = () => {
 
             try {
                 await api.put('/admin/rankings/gpu/reorder', {
-                    rankings: rankings.map(r => ({ gpuId: r.gpuId, rank: r.rank }))
+                    rankings: rankings.map(r => ({ id: r.id, rank: r.rank }))
                 });
                 loadGPURankings();
             } catch (error) {
@@ -204,7 +204,7 @@ const RankingsPage: React.FC = () => {
 
             try {
                 await api.put('/admin/rankings/cpu/reorder', {
-                    rankings: rankings.map(r => ({ cpuId: r.cpuId, rank: r.rank }))
+                    rankings: rankings.map(r => ({ id: r.id, rank: r.rank }))
                 });
                 loadCPURankings();
             } catch (error) {
