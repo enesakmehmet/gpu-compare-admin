@@ -8,7 +8,7 @@ import RecommendedSystemsPage from './pages/RecommendedSystemsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PushNotificationsPage from './pages/PushNotificationsPage';
 import SettingsPage from './pages/SettingsPage';
-import MonitoringPage from './pages/MonitoringPage';
+
 import RankingsPage from './pages/RankingsPage';
 
 function App() {
@@ -81,14 +81,6 @@ function App() {
               ⚙️ Ayarlar
             </NavLink>
             <NavLink
-              to="/monitoring"
-              className={({ isActive }) =>
-                'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
-              }
-            >
-              📊 Monitoring
-            </NavLink>
-            <NavLink
               to="/rankings"
               className={({ isActive }) =>
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
@@ -115,7 +107,7 @@ function App() {
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/push-notifications" element={<PushNotificationsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/monitoring" element={<MonitoringPage />} />
+
               <Route path="/rankings" element={<RankingsPage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
