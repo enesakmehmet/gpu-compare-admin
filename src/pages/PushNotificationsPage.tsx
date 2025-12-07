@@ -72,6 +72,12 @@ const PushNotificationsPage: React.FC = () => {
         }
 
         try {
+            console.log('Push gönderiliyor:', JSON.stringify({
+                title: form.title,
+                body: form.body,
+                data: { type: 'admin_push' },
+            }));
+
             setSending(true);
             setLastSendResult(null);
             const res = await api.post<{ stats: SendStats }>('/admin/push/send', {
@@ -79,12 +85,14 @@ const PushNotificationsPage: React.FC = () => {
                 body: form.body,
                 data: { type: 'admin_push' },
             });
+            console.log('Push yanıtı:', res.data);
+
             setLastSendResult(res.data.stats);
             alert('Bildirim başarıyla gönderildi!');
             setForm({ title: '', body: '' });
             await loadData();
         } catch (err: any) {
-            console.error(err);
+            console.error('Push gönderim hatası:', err);
             alert(err.response?.data?.error || 'Bildirim gönderilirken hata oluştu');
         } finally {
             setSending(false);
