@@ -99,6 +99,19 @@ const PushNotificationsPage: React.FC = () => {
         }
     };
 
+    const handleDeleteLog = async (log: PushLog) => {
+        if (!window.confirm(`"${log.title}" bildirimini silmek istiyor musunuz?`)) return;
+
+        try {
+            await api.delete(`/admin/push/logs/${log.id}`);
+            await loadData();
+            alert('Bildirim silindi');
+        } catch (err) {
+            console.error('Silme hatası:', err);
+            alert('Bildirim silinirken hata oluştu');
+        }
+    };
+
     const formatDate = (dateStr: string) => {
         return new Date(dateStr).toLocaleString('tr-TR');
     };
@@ -200,24 +213,35 @@ const PushNotificationsPage: React.FC = () => {
                                     <th>Başarılı</th>
                                     <th>Başarısız</th>
                                     <th>Tarih</th>
+                                    <th style={{ width: 80 }}>İşlem</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {logs.map((log) => (
                                     <tr key={log.id}>
                                         <td>{log.title}</td>
-                                        <td style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {log.body}
                                         </td>
                                         <td>{log.sentCount}</td>
                                         <td style={{ color: '#10B981' }}>{log.successCount}</td>
                                         <td style={{ color: log.failCount > 0 ? '#EF4444' : '#94A3B8' }}>{log.failCount}</td>
                                         <td>{formatDate(log.sentAt)}</td>
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className="table-btn table-btn--danger"
+                                                onClick={() => handleDeleteLog(log)}
+                                                style={{ padding: '4px 10px', fontSize: '12px' }}
+                                            >
+                                                🗑️ Sil
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                                 {logs.length === 0 && !loading && (
                                     <tr>
-                                        <td colSpan={6} style={{ textAlign: 'center', padding: '24px 0', color: '#94A3B8' }}>
+                                        <td colSpan={7} style={{ textAlign: 'center', padding: '24px 0', color: '#94A3B8' }}>
                                             Henüz bildirim gönderilmemiş.
                                         </td>
                                     </tr>
