@@ -33,11 +33,30 @@ const PushNotificationsPage: React.FC = () => {
     const [logs, setLogs] = useState<PushLog[]>([]);
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
+    const [clearing, setClearing] = useState(false);
     const [lastSendResult, setLastSendResult] = useState<SendStats | null>(null);
     const [form, setForm] = useState({
         title: '',
         body: '',
     });
+
+    const handleClearAllTokens = async () => {
+        if (!window.confirm('⚠️ Tüm kayıtlı cihazları silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz. Kullanıcılar uygulamayı tekrar açtığında otomatik kaydolacaklar.')) {
+            return;
+        }
+
+        try {
+            setClearing(true);
+            const res = await api.delete<{ deletedCount: number }>('/admin/push-tokens/clear');
+            alert(`✅ ${res.data.deletedCount} cihaz başarıyla silindi!`);
+            await loadData();
+        } catch (err: any) {
+            console.error('Token silme hatası:', err);
+            alert(err.response?.data?.error || 'Tokenlar silinirken hata oluştu');
+        } finally {
+            setClearing(false);
+        }
+    };
 
     const loadData = useCallback(async () => {
         try {
@@ -255,8 +274,27 @@ const PushNotificationsPage: React.FC = () => {
                 <div className="panel panel--table">
                     <div className="panel-header">
                         <h2>📱 Kayıtlı Cihazlar</h2>
-                        <div className="panel-header-right">
+                        <div className="panel-header-right" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                             <span className="tag">{tokens.length} cihaz</span>
+                            {tokens.length > 0 && (
+                                <button
+                                    onClick={handleClearAllTokens}
+                                    disabled={clearing}
+                                    style={{
+                                        padding: '6px 12px',
+                                        backgroundColor: '#EF4444',
+                                        color: '#fff',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: clearing ? 'not-allowed' : 'pointer',
+                                        fontSize: '12px',
+                                        fontWeight: 500,
+                                        opacity: clearing ? 0.6 : 1,
+                                    }}
+                                >
+                                    {clearing ? '⏳ Siliniyor...' : '🗑️ Tümünü Sil'}
+                                </button>
+                            )}
                         </div>
                     </div>
                     <div className="table-wrapper">
