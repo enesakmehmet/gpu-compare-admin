@@ -10,6 +10,7 @@ import PushNotificationsPage from './pages/PushNotificationsPage';
 import SettingsPage from './pages/SettingsPage';
 
 import RankingsPage from './pages/RankingsPage';
+import PCBuilderPage from './pages/PCBuilderPage';
 
 function App() {
   return (
@@ -88,6 +89,14 @@ function App() {
             >
               🏆 Benchmark Sıralaması
             </NavLink>
+            <NavLink
+              to="/pcbuilder"
+              className={({ isActive }) =>
+                'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
+              }
+            >
+              🛠️ PC Builder
+            </NavLink>
           </nav>
           <div className="sidebar-footer">Sadece yönetim amaçlı kullanın</div>
         </aside>
@@ -109,6 +118,7 @@ function App() {
               <Route path="/settings" element={<SettingsPage />} />
 
               <Route path="/rankings" element={<RankingsPage />} />
+              <Route path="/pcbuilder" element={<PCBuilderPage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
