@@ -13,6 +13,7 @@ interface Motherboard {
     ramType: string;
     ramSlots: number;
     maxRamGB: number;
+    maxRamSpeedMHz?: number;
     m2Slots: number;
     hasWifi: boolean;
     isActive: boolean;
@@ -64,6 +65,7 @@ interface PCCase {
     formFactor: string;
     maxGpuLengthMM: number;
     maxCoolerHeightMM: number;
+    maxRadiatorMM?: number;
     driveBays25: number;
     driveBays35: number;
     isActive: boolean;
@@ -235,6 +237,10 @@ const PCBuilderPage: React.FC = () => {
                             <div className="form-group">
                                 <label>Max RAM (GB)</label>
                                 <input type="number" value={formData.maxRamGB || 128} onChange={e => setFormData({ ...formData, maxRamGB: parseInt(e.target.value) })} />
+                            </div>
+                            <div className="form-group">
+                                <label>Max RAM Hızı (MHz)</label>
+                                <input type="number" value={formData.maxRamSpeedMHz || ''} onChange={e => setFormData({ ...formData, maxRamSpeedMHz: parseInt(e.target.value) || null })} placeholder="6000" />
                             </div>
                             <div className="form-group">
                                 <label>M.2 Slot</label>
@@ -417,6 +423,10 @@ const PCBuilderPage: React.FC = () => {
                                 <input type="number" value={formData.maxCoolerHeightMM || ''} onChange={e => setFormData({ ...formData, maxCoolerHeightMM: parseInt(e.target.value) })} placeholder="165" />
                             </div>
                             <div className="form-group">
+                                <label>Max Radiator (mm)</label>
+                                <input type="number" value={formData.maxRadiatorMM || ''} onChange={e => setFormData({ ...formData, maxRadiatorMM: parseInt(e.target.value) || null })} placeholder="360" />
+                            </div>
+                            <div className="form-group">
                                 <label>2.5" Slot</label>
                                 <input type="number" value={formData.driveBays25 || 2} onChange={e => setFormData({ ...formData, driveBays25: parseInt(e.target.value) })} />
                             </div>
@@ -512,7 +522,7 @@ const PCBuilderPage: React.FC = () => {
                                     <td><span className="tag">{m.socket}</span></td>
                                     <td>{m.chipset}</td>
                                     <td>{m.formFactor}</td>
-                                    <td>{m.ramType} ({m.ramSlots} slot)</td>
+                                    <td>{m.ramType} ({m.ramSlots} slot){m.maxRamSpeedMHz ? ` • ${m.maxRamSpeedMHz}MHz` : ''}</td>
                                     <td>
                                         <button className="btn-sm" onClick={() => handleEdit(m)}>✏️</button>
                                         <button className="btn-sm btn-danger" onClick={() => handleDelete(m.slug)}>🗑️</button>
@@ -576,7 +586,7 @@ const PCBuilderPage: React.FC = () => {
                                     <td><span className="tag">{s.type}</span></td>
                                     <td>{s.interface}</td>
                                     <td>{s.capacityGB >= 1000 ? `${s.capacityGB / 1000} TB` : `${s.capacityGB} GB`}</td>
-                                    <td>{s.readSpeedMBs || '-'}/{s.writeSpeedMBs || '-'} MB/s</td>
+                                    <td>{s.readSpeedMBs || '-'} / {s.writeSpeedMBs || '-'} MB/s</td>
                                     <td>
                                         <button className="btn-sm" onClick={() => handleEdit(s)}>✏️</button>
                                         <button className="btn-sm btn-danger" onClick={() => handleDelete(s.slug)}>🗑️</button>
@@ -626,6 +636,7 @@ const PCBuilderPage: React.FC = () => {
                                 <th>Form Factor</th>
                                 <th>Max GPU</th>
                                 <th>Max Cooler</th>
+                                <th>Max Radiator</th>
                                 <th>İşlem</th>
                             </tr>
                         </thead>
@@ -637,6 +648,7 @@ const PCBuilderPage: React.FC = () => {
                                     <td><span className="tag">{c.formFactor}</span></td>
                                     <td>{c.maxGpuLengthMM}mm</td>
                                     <td>{c.maxCoolerHeightMM}mm</td>
+                                    <td>{c.maxRadiatorMM ? `${c.maxRadiatorMM}mm` : '-'}</td>
                                     <td>
                                         <button className="btn-sm" onClick={() => handleEdit(c)}>✏️</button>
                                         <button className="btn-sm btn-danger" onClick={() => handleDelete(c.slug)}>🗑️</button>

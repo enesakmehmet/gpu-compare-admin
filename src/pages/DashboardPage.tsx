@@ -2,224 +2,284 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../api/client';
 
 interface Stats {
-    totalDownloads: number;
-    liveActive: number;
-    dailyActive: number;
-    weeklyActive: number;
-    monthlyActive: number;
-    platformStats: { platform: string; count: number }[];
-    last7Days: { date: string; count: number }[];
+  totalDownloads: number;
+  liveActive: number;
+  dailyActive: number;
+  weeklyActive: number;
+  monthlyActive: number;
+  platformStats: { platform: string; count: number }[];
+  last7Days: { date: string; count: number }[];
+}
+
+interface ExtendedStats {
+  daily: { date: string; label: string; activeUsers: number; newUsers: number }[];
+  weekly: { weekStart: string; weekEnd: string; label: string; activeUsers: number }[];
+  monthly: { month: string; label: string; activeUsers: number }[];
+  platformBreakdown: { platform: string; count: number; percentage: number }[];
+}
+
+interface RevenueStats {
+  activeUsers: { daily: number; weekly: number; monthly: number };
+  impressions: { dailyBanner: number; dailyInterstitial: number; weeklyBanner: number; weeklyInterstitial: number };
+  estimatedRevenue: { daily: number; weekly: number; monthly: number; dailyUSD: number; monthlyUSD: number };
+  disclaimer: string;
 }
 
 interface Device {
-    id: number;
-    deviceId: string;
-    platform: string | null;
-    deviceModel: string | null;
-    appVersion: string | null;
-    firstSeenAt: string;
-    lastActiveAt: string;
+  id: number;
+  deviceId: string;
+  platform: string | null;
+  deviceModel: string | null;
+  appVersion: string | null;
+  firstSeenAt: string;
+  lastActiveAt: string;
 }
 
 const DashboardPage: React.FC = () => {
-    const [stats, setStats] = useState<Stats | null>(null);
-    const [devices, setDevices] = useState<Device[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [extendedStats, setExtendedStats] = useState<ExtendedStats | null>(null);
+  const [revenueStats, setRevenueStats] = useState<RevenueStats | null>(null);
+  const [devices, setDevices] = useState<Device[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
-    const fetchData = async () => {
-        try {
-            setLoading(true);
-            const [statsRes, devicesRes] = await Promise.all([
-                api.get('/analytics/stats'),
-                api.get('/analytics/devices?limit=10'),
-            ]);
-            setStats(statsRes.data);
-            setDevices(devicesRes.data);
-            setError('');
-        } catch (err) {
-            setError('Veriler yüklenirken hata oluştu');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-        // Her 30 saniyede bir güncelle
-        const interval = setInterval(fetchData, 30000);
-        return () => clearInterval(interval);
-    }, []);
-
-    const formatDate = (dateStr: string) => {
-        const date = new Date(dateStr);
-        return date.toLocaleString('tr-TR');
-    };
-
-    const formatRelativeTime = (dateStr: string) => {
-        const date = new Date(dateStr);
-        const now = new Date();
-        const diffMs = now.getTime() - date.getTime();
-        const diffMin = Math.floor(diffMs / 60000);
-        const diffHour = Math.floor(diffMin / 60);
-        const diffDay = Math.floor(diffHour / 24);
-
-        if (diffMin < 1) return 'Şimdi';
-        if (diffMin < 60) return `${diffMin} dk önce`;
-        if (diffHour < 24) return `${diffHour} saat önce`;
-        return `${diffDay} gün önce`;
-    };
-
-    if (loading && !stats) {
-        return <div className="loading">Yükleniyor...</div>;
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [statsRes, extendedRes, revenueRes, devicesRes] = await Promise.all([
+        api.get('/analytics/stats'),
+        api.get('/analytics/stats/extended'),
+        api.get('/analytics/stats/revenue'),
+        api.get('/analytics/devices?limit=10'),
+      ]);
+      setStats(statsRes.data);
+      setExtendedStats(extendedRes.data);
+      setRevenueStats(revenueRes.data);
+      setDevices(devicesRes.data);
+      setError('');
+    } catch (err) {
+      setError('Veriler yüklenirken hata oluştu');
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (error && !stats) {
-        return <div className="error-message">{error}</div>;
-    }
+  useEffect(() => {
+    fetchData();
+    // Her 30 saniyede bir güncelle
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
-    return (
-        <div className="dashboard-page">
-            <div className="page-header">
-                <h1>📊 Dashboard</h1>
-                <button className="btn btn-secondary" onClick={fetchData}>
-                    🔄 Yenile
-                </button>
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleString('tr-TR');
+  };
+
+  const formatRelativeTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffMin < 1) return 'Şimdi';
+    if (diffMin < 60) return `${diffMin} dk önce`;
+    if (diffHour < 24) return `${diffHour} saat önce`;
+    return `${diffDay} gün önce`;
+  };
+
+  if (loading && !stats) {
+    return <div className="loading">Yükleniyor...</div>;
+  }
+
+  if (error && !stats) {
+    return <div className="error-message">{error}</div>;
+  }
+
+  return (
+    <div className="dashboard-page">
+      <div className="page-header">
+        <h1>📊 Dashboard</h1>
+        <button className="btn btn-secondary" onClick={fetchData}>
+          🔄 Yenile
+        </button>
+      </div>
+
+      {/* Ana İstatistik Kartları */}
+      <div className="stats-grid">
+        <div className="stat-card stat-card--primary">
+          <div className="stat-icon">📱</div>
+          <div className="stat-content">
+            <div className="stat-value">{stats?.totalDownloads || 0}</div>
+            <div className="stat-label">Toplam İndirme</div>
+          </div>
+        </div>
+
+        <div className="stat-card stat-card--success">
+          <div className="stat-icon">🟢</div>
+          <div className="stat-content">
+            <div className="stat-value">{stats?.liveActive || 0}</div>
+            <div className="stat-label">Şu An Aktif</div>
+            <div className="stat-sublabel">Son 5 dakika</div>
+          </div>
+        </div>
+
+        <div className="stat-card stat-card--info">
+          <div className="stat-icon">📅</div>
+          <div className="stat-content">
+            <div className="stat-value">{stats?.dailyActive || 0}</div>
+            <div className="stat-label">Bugün Aktif</div>
+          </div>
+        </div>
+
+        <div className="stat-card stat-card--warning">
+          <div className="stat-icon">📊</div>
+          <div className="stat-content">
+            <div className="stat-value">{stats?.weeklyActive || 0}</div>
+            <div className="stat-label">Bu Hafta Aktif</div>
+          </div>
+        </div>
+
+        <div className="stat-card stat-card--secondary">
+          <div className="stat-icon">📈</div>
+          <div className="stat-content">
+            <div className="stat-value">{stats?.monthlyActive || 0}</div>
+            <div className="stat-label">Bu Ay Aktif</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tahmini Gelir Kartları */}
+      {revenueStats && (
+        <div className="revenue-section">
+          <h2>💰 Tahmini Reklam Geliri</h2>
+          <div className="revenue-grid">
+            <div className="revenue-card">
+              <div className="revenue-icon">📅</div>
+              <div className="revenue-content">
+                <div className="revenue-value">₺{revenueStats.estimatedRevenue.daily.toFixed(2)}</div>
+                <div className="revenue-label">Günlük</div>
+                <div className="revenue-usd">${revenueStats.estimatedRevenue.dailyUSD.toFixed(2)} USD</div>
+              </div>
             </div>
-
-            {/* Ana İstatistik Kartları */}
-            <div className="stats-grid">
-                <div className="stat-card stat-card--primary">
-                    <div className="stat-icon">📱</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats?.totalDownloads || 0}</div>
-                        <div className="stat-label">Toplam İndirme</div>
-                    </div>
-                </div>
-
-                <div className="stat-card stat-card--success">
-                    <div className="stat-icon">🟢</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats?.liveActive || 0}</div>
-                        <div className="stat-label">Şu An Aktif</div>
-                        <div className="stat-sublabel">Son 5 dakika</div>
-                    </div>
-                </div>
-
-                <div className="stat-card stat-card--info">
-                    <div className="stat-icon">📅</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats?.dailyActive || 0}</div>
-                        <div className="stat-label">Bugün Aktif</div>
-                    </div>
-                </div>
-
-                <div className="stat-card stat-card--warning">
-                    <div className="stat-icon">📊</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats?.weeklyActive || 0}</div>
-                        <div className="stat-label">Bu Hafta Aktif</div>
-                    </div>
-                </div>
-
-                <div className="stat-card stat-card--secondary">
-                    <div className="stat-icon">📈</div>
-                    <div className="stat-content">
-                        <div className="stat-value">{stats?.monthlyActive || 0}</div>
-                        <div className="stat-label">Bu Ay Aktif</div>
-                    </div>
-                </div>
+            <div className="revenue-card">
+              <div className="revenue-icon">📆</div>
+              <div className="revenue-content">
+                <div className="revenue-value">₺{revenueStats.estimatedRevenue.weekly.toFixed(2)}</div>
+                <div className="revenue-label">Haftalık</div>
+              </div>
             </div>
-
-            {/* Alt Bölüm */}
-            <div className="dashboard-row">
-                {/* Platform Dağılımı */}
-                <div className="dashboard-card">
-                    <h3>📱 Platform Dağılımı</h3>
-                    <div className="platform-list">
-                        {stats?.platformStats?.map((p) => (
-                            <div key={p.platform} className="platform-item">
-                                <span className="platform-name">
-                                    {p.platform === 'android' ? '🤖 Android' :
-                                        p.platform === 'ios' ? '🍎 iOS' :
-                                            `📱 ${p.platform}`}
-                                </span>
-                                <span className="platform-count">{p.count}</span>
-                            </div>
-                        ))}
-                        {(!stats?.platformStats || stats.platformStats.length === 0) && (
-                            <div className="empty-state">Henüz veri yok</div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Son 7 Gün Grafiği */}
-                <div className="dashboard-card">
-                    <h3>📈 Son 7 Gün İndirmeler</h3>
-                    <div className="chart-bars">
-                        {stats?.last7Days?.map((day) => {
-                            const maxCount = Math.max(...(stats.last7Days?.map(d => d.count) || [1]));
-                            const height = maxCount > 0 ? (day.count / maxCount) * 100 : 0;
-                            return (
-                                <div key={day.date} className="chart-bar-container">
-                                    <div className="chart-bar" style={{ height: `${Math.max(height, 5)}%` }}>
-                                        <span className="chart-bar-value">{day.count}</span>
-                                    </div>
-                                    <span className="chart-bar-label">
-                                        {new Date(day.date).toLocaleDateString('tr-TR', { weekday: 'short' })}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
+            <div className="revenue-card revenue-card--highlight">
+              <div className="revenue-icon">🗓️</div>
+              <div className="revenue-content">
+                <div className="revenue-value">₺{revenueStats.estimatedRevenue.monthly.toFixed(2)}</div>
+                <div className="revenue-label">Aylık</div>
+                <div className="revenue-usd">${revenueStats.estimatedRevenue.monthlyUSD.toFixed(2)} USD</div>
+              </div>
             </div>
+          </div>
+          <div className="revenue-impressions">
+            <span>📊 Günlük Gösterim: Banner: {revenueStats.impressions.dailyBanner} | Interstitial: {revenueStats.impressions.dailyInterstitial}</span>
+          </div>
+          <p className="disclaimer">{revenueStats.disclaimer}</p>
+        </div>
+      )}
 
-            {/* Son Aktif Cihazlar */}
-            <div className="dashboard-card dashboard-card--full">
-                <h3>📲 Son Aktif Cihazlar</h3>
-                <div className="table-container">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>Platform</th>
-                                <th>Model</th>
-                                <th>Versiyon</th>
-                                <th>İlk Görülme</th>
-                                <th>Son Aktif</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {devices.map((device) => (
-                                <tr key={device.id}>
-                                    <td>
-                                        <span className={`platform-badge platform-badge--${device.platform || 'unknown'}`}>
-                                            {device.platform === 'android' ? '🤖' : device.platform === 'ios' ? '🍎' : '📱'}
-                                            {' '}{device.platform || 'Bilinmiyor'}
-                                        </span>
-                                    </td>
-                                    <td>{device.deviceModel || '-'}</td>
-                                    <td>{device.appVersion || '-'}</td>
-                                    <td>{formatDate(device.firstSeenAt)}</td>
-                                    <td>
-                                        <span className="time-badge">
-                                            {formatRelativeTime(device.lastActiveAt)}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                            {devices.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} className="empty-state">Henüz cihaz kaydı yok</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+      {/* Alt Bölüm */}
+      <div className="dashboard-row">
+        {/* Platform Dağılımı */}
+        <div className="dashboard-card">
+          <h3>📱 Platform Dağılımı</h3>
+          <div className="platform-list">
+            {extendedStats?.platformBreakdown?.map((p) => (
+              <div key={p.platform} className="platform-item">
+                <span className="platform-name">
+                  {p.platform === 'android' ? '🤖 Android' :
+                    p.platform === 'ios' ? '🍎 iOS' :
+                      `📱 ${p.platform}`}
+                </span>
+                <div className="platform-stats">
+                  <span className="platform-count">{p.count}</span>
+                  <span className="platform-percent">%{p.percentage}</span>
                 </div>
-            </div>
+              </div>
+            ))}
+            {(!extendedStats?.platformBreakdown || extendedStats.platformBreakdown.length === 0) && (
+              <div className="empty-state">Henüz veri yok</div>
+            )}
+          </div>
+        </div>
 
-            <style>{`
+        {/* Son 7 Gün Grafiği */}
+        <div className="dashboard-card">
+          <h3>📈 Son 7 Gün İndirmeler</h3>
+          <div className="chart-bars">
+            {stats?.last7Days?.map((day) => {
+              const maxCount = Math.max(...(stats.last7Days?.map(d => d.count) || [1]));
+              const height = maxCount > 0 ? (day.count / maxCount) * 100 : 0;
+              return (
+                <div key={day.date} className="chart-bar-container">
+                  <div className="chart-bar" style={{ height: `${Math.max(height, 5)}%` }}>
+                    <span className="chart-bar-value">{day.count}</span>
+                  </div>
+                  <span className="chart-bar-label">
+                    {new Date(day.date).toLocaleDateString('tr-TR', { weekday: 'short' })}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Son Aktif Cihazlar */}
+      <div className="dashboard-card dashboard-card--full">
+        <h3>📲 Son Aktif Cihazlar</h3>
+        <div className="table-container">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Platform</th>
+                <th>Model</th>
+                <th>Versiyon</th>
+                <th>İlk Görülme</th>
+                <th>Son Aktif</th>
+              </tr>
+            </thead>
+            <tbody>
+              {devices.map((device) => (
+                <tr key={device.id}>
+                  <td>
+                    <span className={`platform-badge platform-badge--${device.platform || 'unknown'}`}>
+                      {device.platform === 'android' ? '🤖' : device.platform === 'ios' ? '🍎' : '📱'}
+                      {' '}{device.platform || 'Bilinmiyor'}
+                    </span>
+                  </td>
+                  <td>{device.deviceModel || '-'}</td>
+                  <td>{device.appVersion || '-'}</td>
+                  <td>{formatDate(device.firstSeenAt)}</td>
+                  <td>
+                    <span className="time-badge">
+                      {formatRelativeTime(device.lastActiveAt)}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {devices.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="empty-state">Henüz cihaz kaydı yok</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <style>{`
         .dashboard-page {
           padding: 20px;
         }
@@ -498,9 +558,98 @@ const DashboardPage: React.FC = () => {
         .btn-secondary:hover {
           background: #e2e8f0;
         }
+
+        .revenue-section {
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          border-radius: 16px;
+          padding: 24px;
+          margin-bottom: 24px;
+          color: white;
+        }
+
+        .revenue-section h2 {
+          margin: 0 0 16px 0;
+          font-size: 20px;
+        }
+
+        .revenue-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+          .revenue-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        .revenue-card {
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(10px);
+          border-radius: 12px;
+          padding: 20px;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .revenue-card--highlight {
+          background: rgba(255, 255, 255, 0.25);
+          border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .revenue-icon {
+          font-size: 32px;
+        }
+
+        .revenue-value {
+          font-size: 28px;
+          font-weight: 700;
+        }
+
+        .revenue-label {
+          font-size: 14px;
+          opacity: 0.9;
+        }
+
+        .revenue-usd {
+          font-size: 12px;
+          opacity: 0.7;
+          margin-top: 4px;
+        }
+
+        .revenue-impressions {
+          margin-top: 16px;
+          padding: 12px 16px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          font-size: 13px;
+        }
+
+        .disclaimer {
+          margin: 12px 0 0 0;
+          font-size: 11px;
+          opacity: 0.7;
+          font-style: italic;
+        }
+
+        .platform-stats {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .platform-percent {
+          font-size: 12px;
+          color: #64748b;
+          background: #f1f5f9;
+          padding: 2px 8px;
+          border-radius: 12px;
+        }
       `}</style>
-        </div>
-    );
+    </div>
+  );
 };
 
 export default DashboardPage;
