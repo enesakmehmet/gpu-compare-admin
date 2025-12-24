@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import './App.css';
 import DashboardPage from './pages/DashboardPage';
@@ -13,10 +13,18 @@ import RankingsPage from './pages/RankingsPage';
 import PCBuilderPage from './pages/PCBuilderPage';
 
 function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const closeSidebar = () => setSidebarOpen(false);
+
   return (
     <BrowserRouter>
       <div className="app-root">
-        <aside className="sidebar">
+        {/* Mobile overlay */}
+        {sidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar} />}
+
+        <aside className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}>
           <div className="sidebar-logo">
             <div className="logo-mark">DK</div>
             <div className="logo-text">
@@ -27,6 +35,7 @@ function App() {
           <nav className="sidebar-nav">
             <NavLink
               to="/dashboard"
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
@@ -35,6 +44,7 @@ function App() {
             </NavLink>
             <NavLink
               to="/cpus"
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
@@ -43,6 +53,7 @@ function App() {
             </NavLink>
             <NavLink
               to="/gpus"
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
@@ -51,6 +62,7 @@ function App() {
             </NavLink>
             <NavLink
               to="/recommended-systems"
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
@@ -59,6 +71,7 @@ function App() {
             </NavLink>
             <NavLink
               to="/notifications"
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
@@ -67,6 +80,7 @@ function App() {
             </NavLink>
             <NavLink
               to="/push-notifications"
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
@@ -75,6 +89,7 @@ function App() {
             </NavLink>
             <NavLink
               to="/settings"
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
@@ -83,6 +98,7 @@ function App() {
             </NavLink>
             <NavLink
               to="/rankings"
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
@@ -91,6 +107,7 @@ function App() {
             </NavLink>
             <NavLink
               to="/pcbuilder"
+              onClick={closeSidebar}
               className={({ isActive }) =>
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
@@ -103,6 +120,11 @@ function App() {
 
         <div className="main">
           <header className="topbar">
+            <button className="hamburger-btn" onClick={toggleSidebar} aria-label="Menü">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
             <div className="topbar-title">Veri Yönetimi</div>
             <div className="topbar-user">Admin</div>
           </header>
