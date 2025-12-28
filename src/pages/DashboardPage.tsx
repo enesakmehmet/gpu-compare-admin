@@ -66,6 +66,23 @@ const DashboardPage: React.FC = () => {
     }
   };
 
+  const handleCleanupDuplicates = async () => {
+    if (!confirm('Aynı cihaz modeline ait eski kayıtlar (farklı app versiyonları) silinecek. Devam edilsin mi?')) {
+      return;
+    }
+    try {
+      setLoading(true);
+      const { data } = await api.post('/analytics/cleanup-duplicates');
+      setMessage({ type: 'success', text: data.message || `${data.deleted} kayıt silindi` });
+      fetchData(); // Refresh
+    } catch (err) {
+      console.error(err);
+      setMessage({ type: 'error', text: 'Temizleme sırasında hata oluştu' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
     // Her 30 saniyede bir güncelle
@@ -104,9 +121,14 @@ const DashboardPage: React.FC = () => {
     <div className="dashboard-page">
       <div className="page-header">
         <h1>📊 Dashboard</h1>
-        <button className="btn btn-secondary" onClick={fetchData}>
-          🔄 Yenile
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="btn btn-warning" onClick={handleCleanupDuplicates}>
+            🧹 Test Kayıtlarını Temizle
+          </button>
+          <button className="btn btn-secondary" onClick={fetchData}>
+            🔄 Yenile
+          </button>
+        </div>
       </div>
 
       {/* Ana İstatistik Kartları */}
@@ -557,6 +579,15 @@ const DashboardPage: React.FC = () => {
 
         .btn-secondary:hover {
           background: #e2e8f0;
+        }
+
+        .btn-warning {
+          background: #f59e0b;
+          color: white;
+        }
+
+        .btn-warning:hover {
+          background: #d97706;
         }
 
         .revenue-section {
