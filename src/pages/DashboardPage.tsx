@@ -43,6 +43,7 @@ const DashboardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const fetchData = async () => {
     try {
@@ -67,7 +68,7 @@ const DashboardPage: React.FC = () => {
   };
 
   const handleCleanupDuplicates = async () => {
-    if (!confirm('Aynı cihaz modeline ait eski kayıtlar (farklı app versiyonları) silinecek. Devam edilsin mi?')) {
+    if (!window.confirm('Aynı cihaz modeline ait eski kayıtlar (farklı app versiyonları) silinecek. Devam edilsin mi?')) {
       return;
     }
     try {
@@ -130,6 +131,12 @@ const DashboardPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {message && (
+        <div className={`message ${message.type}`} onClick={() => setMessage(null)}>
+          {message.text}
+        </div>
+      )}
 
       {/* Ana İstatistik Kartları */}
       <div className="stats-grid">
@@ -317,6 +324,26 @@ const DashboardPage: React.FC = () => {
           margin: 0;
           font-size: 24px;
           color: #1e293b;
+        }
+
+        .message {
+          padding: 12px 16px;
+          border-radius: 8px;
+          margin-bottom: 16px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+
+        .message.success {
+          background: rgba(34, 197, 94, 0.1);
+          border: 1px solid rgba(34, 197, 94, 0.3);
+          color: #22c55e;
+        }
+
+        .message.error {
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          color: #ef4444;
         }
 
         .stats-grid {
