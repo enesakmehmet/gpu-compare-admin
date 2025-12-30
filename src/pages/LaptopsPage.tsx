@@ -92,12 +92,22 @@ const LaptopsPage = () => {
     const fetchLaptops = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_URL}/admin/laptops`, {
+            const url = `${API_URL}/admin/laptops`;
+            console.log('🔍 Fetching laptops from:', url);
+            console.log('🔑 Using token:', token);
+
+            const response = await fetch(url, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+
+            console.log('📡 Response status:', response.status);
+
             const data = await response.json();
+            console.log('📦 Data received:', data);
+
             setLaptops(data);
         } catch (error) {
+            console.error('❌ Error:', error);
             setError('Laptoplar yüklenemedi');
         }
     };
@@ -105,13 +115,20 @@ const LaptopsPage = () => {
     const fetchFormOptions = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`${API_URL}/admin/laptops/form-options`, {
+            const url = `${API_URL}/admin/laptops/form-options`;
+            console.log('🔍 Fetching form options from:', url);
+
+            const response = await fetch(url, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+
+            console.log('📡 Form options response:', response.status);
+
             const data = await response.json();
             setGpus(data.gpus);
             setCpus(data.cpus);
         } catch (error) {
+            console.error('❌ Form options error:', error);
             setError('Form seçenekleri yüklenemedi');
         }
     };
