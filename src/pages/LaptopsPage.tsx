@@ -19,11 +19,11 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
-    Grid,
     Checkbox,
     FormControlLabel,
     IconButton,
     Alert,
+    Stack,
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
 
@@ -270,32 +270,28 @@ const LaptopsPage = () => {
                     {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
                     {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
-                    <Grid container spacing={2} sx={{ mt: 1 }}>
-                        <Grid item xs={6}>
+                    <Stack spacing={2} sx={{ mt: 1 }}>
+                        <Stack direction="row" spacing={2}>
                             <TextField
                                 fullWidth
                                 label="Marka *"
                                 value={formData.brand}
                                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                             />
-                        </Grid>
-                        <Grid item xs={6}>
                             <TextField
                                 fullWidth
                                 label="Seri"
                                 value={formData.series}
                                 onChange={(e) => setFormData({ ...formData, series: e.target.value })}
                             />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                label="Model *"
-                                value={formData.model}
-                                onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
+                        </Stack>
+                        <TextField
+                            fullWidth
+                            label="Model *"
+                            value={formData.model}
+                            onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                        />
+                        <Stack direction="row" spacing={2}>
                             <TextField
                                 fullWidth
                                 label="Slug *"
@@ -303,8 +299,6 @@ const LaptopsPage = () => {
                                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                                 helperText="URL dostu isim (örn: msi-katana-15)"
                             />
-                        </Grid>
-                        <Grid item xs={6}>
                             <TextField
                                 fullWidth
                                 label="Fiyat (₺)"
@@ -312,8 +306,8 @@ const LaptopsPage = () => {
                                 value={formData.price}
                                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                             />
-                        </Grid>
-                        <Grid item xs={6}>
+                        </Stack>
+                        <Stack direction="row" spacing={2}>
                             <FormControl fullWidth>
                                 <InputLabel>GPU *</InputLabel>
                                 <Select
@@ -325,8 +319,6 @@ const LaptopsPage = () => {
                                     ))}
                                 </Select>
                             </FormControl>
-                        </Grid>
-                        <Grid item xs={6}>
                             <FormControl fullWidth>
                                 <InputLabel>CPU *</InputLabel>
                                 <Select
@@ -338,8 +330,8 @@ const LaptopsPage = () => {
                                     ))}
                                 </Select>
                             </FormControl>
-                        </Grid>
-                        <Grid item xs={4}>
+                        </Stack>
+                        <Stack direction="row" spacing={2}>
                             <TextField
                                 fullWidth
                                 label="Ekran Boyutu"
@@ -347,8 +339,6 @@ const LaptopsPage = () => {
                                 onChange={(e) => setFormData({ ...formData, screenSize: e.target.value })}
                                 placeholder='15.6"'
                             />
-                        </Grid>
-                        <Grid item xs={4}>
                             <TextField
                                 fullWidth
                                 label="Çözünürlük"
@@ -356,8 +346,6 @@ const LaptopsPage = () => {
                                 onChange={(e) => setFormData({ ...formData, screenRes: e.target.value })}
                                 placeholder="FHD, QHD, 4K"
                             />
-                        </Grid>
-                        <Grid item xs={4}>
                             <TextField
                                 fullWidth
                                 label="Yenileme Hızı (Hz)"
@@ -365,8 +353,8 @@ const LaptopsPage = () => {
                                 value={formData.screenHz}
                                 onChange={(e) => setFormData({ ...formData, screenHz: e.target.value })}
                             />
-                        </Grid>
-                        <Grid item xs={4}>
+                        </Stack>
+                        <Stack direction="row" spacing={2}>
                             <TextField
                                 fullWidth
                                 label="Panel Tipi"
@@ -374,8 +362,6 @@ const LaptopsPage = () => {
                                 onChange={(e) => setFormData({ ...formData, panelType: e.target.value })}
                                 placeholder="IPS, OLED"
                             />
-                        </Grid>
-                        <Grid item xs={4}>
                             <TextField
                                 fullWidth
                                 label="RAM"
@@ -383,8 +369,6 @@ const LaptopsPage = () => {
                                 onChange={(e) => setFormData({ ...formData, ram: e.target.value })}
                                 placeholder="16GB DDR5"
                             />
-                        </Grid>
-                        <Grid item xs={4}>
                             <TextField
                                 fullWidth
                                 label="Depolama"
@@ -392,8 +376,8 @@ const LaptopsPage = () => {
                                 onChange={(e) => setFormData({ ...formData, storage: e.target.value })}
                                 placeholder="1TB SSD"
                             />
-                        </Grid>
-                        <Grid item xs={6}>
+                        </Stack>
+                        <Stack direction="row" spacing={2} alignItems="center">
                             <TextField
                                 fullWidth
                                 label="GPU Watt (TGP)"
@@ -401,8 +385,6 @@ const LaptopsPage = () => {
                                 value={formData.gpuWatt}
                                 onChange={(e) => setFormData({ ...formData, gpuWatt: e.target.value })}
                             />
-                        </Grid>
-                        <Grid item xs={6}>
                             <FormControlLabel
                                 control={
                                     <Checkbox
@@ -412,8 +394,8 @@ const LaptopsPage = () => {
                                 }
                                 label="MUX Switch Var"
                             />
-                        </Grid>
-                    </Grid>
+                        </Stack>
+                    </Stack>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>İptal</Button>
