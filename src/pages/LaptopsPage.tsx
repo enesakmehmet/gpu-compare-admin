@@ -26,9 +26,8 @@ import {
     Alert,
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
-import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = process.env.REACT_APP_API_URL;
 
 interface GPU {
     id: number;
@@ -93,10 +92,11 @@ const LaptopsPage = () => {
     const fetchLaptops = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`${API_URL}/admin/laptops`, {
+            const response = await fetch(`${API_URL}/admin/laptops`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setLaptops(response.data);
+            const data = await response.json();
+            setLaptops(data);
         } catch (error) {
             setError('Laptoplar yüklenemedi');
         }
@@ -105,11 +105,12 @@ const LaptopsPage = () => {
     const fetchFormOptions = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`${API_URL}/admin/laptops/form-options`, {
+            const response = await fetch(`${API_URL}/admin/laptops/form-options`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setGpus(response.data.gpus);
-            setCpus(response.data.cpus);
+            const data = await response.json();
+            setGpus(data.gpus);
+            setCpus(data.cpus);
         } catch (error) {
             setError('Form seçenekleri yüklenemedi');
         }
@@ -124,6 +125,7 @@ const LaptopsPage = () => {
                 model: laptop.model,
                 slug: laptop.slug,
                 price: laptop.price?.toString() || '',
+
                 screenSize: laptop.screenSize || '',
                 screenRes: laptop.screenRes || '',
                 screenHz: laptop.screenHz?.toString() || '',
@@ -167,34 +169,48 @@ const LaptopsPage = () => {
     const handleSubmit = async () => {
         try {
             const token = localStorage.getItem('token');
-            if (editingLaptop) {
-                await axios.put(`${API_URL}/admin/laptops/${editingLaptop.id}`, formData, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setSuccess('Laptop güncellendi');
+            const url = editingLaptop
+                ? `${API_URL}/admin/laptops/${editingLaptop.id}`
+                : `${API_URL}/admin/laptops`;
+
+            const response = await fetch(url, {
+                method: editingLaptop ? 'PUT' : 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (response.ok) {
+                setSuccess(editingLaptop ? 'Laptop güncellendi' : 'Laptop eklendi');
+                fetchLaptops();
+                setTimeout(() => handleClose(), 1500);
             } else {
-                await axios.post(`${API_URL}/admin/laptops`, formData, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setSuccess('Laptop eklendi');
+                const data = await response.json();
+                setError(data.error || 'İşlem başarısız');
             }
-            fetchLaptops();
-            setTimeout(() => handleClose(), 1500);
-        } catch (error: any) {
-            setError(error.response?.data?.error || 'İşlem başarısız');
+        } catch (error) {
+            setError('İşlem başarısız');
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Bu laptopu silmek istediğinizden emin misiniz?')) return;
+        if (!window.confirm('Bu laptopu silmek istediğinizden emin misiniz?')) return;
 
         try {
             const token = localStorage.getItem('token');
-            await axios.delete(`${API_URL}/admin/laptops/${id}`, {
+            const response = await fetch(`${API_URL}/admin/laptops/${id}`, {
+                method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setSuccess('Laptop silindi');
-            fetchLaptops();
+
+            if (response.ok) {
+                setSuccess('Laptop silindi');
+                fetchLaptops();
+            } else {
+                setError('Silme işlemi başarısız');
+            }
         } catch (error) {
             setError('Silme işlemi başarısız');
         }
