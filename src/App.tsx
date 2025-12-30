@@ -11,6 +11,7 @@ import SettingsPage from './pages/SettingsPage';
 
 import RankingsPage from './pages/RankingsPage';
 import PCBuilderPage from './pages/PCBuilderPage';
+import LaptopsPage from './pages/LaptopsPage';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -112,7 +113,16 @@ function App() {
                 'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
               }
             >
-              🛠️ PC Builder
+              🖥️ PC Toplama Önerileri
+            </NavLink>
+            <NavLink
+              to="/laptops"
+              onClick={closeSidebar}
+              className={({ isActive }) =>
+                'sidebar-link' + (isActive ? ' sidebar-link--active' : '')
+              }
+            >
+              💻 Laptop Yönetimi
             </NavLink>
           </nav>
           <div className="sidebar-footer">Sadece yönetim amaçlı kullanın</div>
@@ -141,6 +151,7 @@ function App() {
 
               <Route path="/rankings" element={<RankingsPage />} />
               <Route path="/pcbuilder" element={<PCBuilderPage />} />
+              <Route path="/laptops" element={<LaptopsPage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
