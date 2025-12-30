@@ -27,7 +27,7 @@ import {
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL || 'https://gpu-compare-backend-production.up.railway.app/api/v1';
 
 interface GPU {
     id: number;
